@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pinball Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="controls">
+        <!-- Theme Selector -->
+        <label for="themeSelector">Select Theme:</label>
+        <select id="themeSelector">
+            <option value="classic">Classic</option>
+            <option value="neon">Neon</option>
+            <option value="retro">Retro</option>
+        </select>
+
+        <!-- Score Display -->
+        <div id="scoreDisplay">Score: <span id="score">0</span></div>
+    </div>
+
+    <!-- Canvas for Game -->
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+    <!-- Link to JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>
