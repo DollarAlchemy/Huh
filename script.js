@@ -18,7 +18,7 @@ let moveLeft = false;
 let moveRight = false;
 
 // Brick properties
-const brickWidth = 40; // Smaller bricks
+const brickWidth = 40;
 const brickHeight = 15;
 const brickPadding = 5;
 const brickOffsetTop = 30;
@@ -34,7 +34,7 @@ let isPaused = false;
 let isGameOver = false;
 let isGameStarted = false;
 
-// Emoji Brick Patterns (Grid Representation)
+// Emoji Brick Patterns
 const emojiLevels = [
   // Smiley Face
   [
@@ -44,7 +44,6 @@ const emojiLevels = [
     [0, 0, 1, 0, 0, 0, 1, 0, 0],
     [0, 0, 0, 1, 1, 1, 0, 0, 0],
   ],
-
   // Pumpkin
   [
     [0, 1, 1, 1, 1, 1, 1, 0],
@@ -53,16 +52,14 @@ const emojiLevels = [
     [0, 1, 0, 1, 1, 0, 1, 0],
     [0, 0, 1, 1, 1, 1, 0, 0],
   ],
-
   // Heart
   [
-    [0, 1, 1, 0, 0, 1, 1, 0],
-    [1, 0, 0, 1, 1, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 1],
-    [0, 1, 0, 0, 0, 0, 1, 0],
-    [0, 0, 1, 0, 0, 1, 0, 0],
+    [0, 0, 1, 1, 0, 1, 1, 0, 0],
+    [0, 1, 0, 0, 1, 0, 0, 1, 0],
+    [1, 0, 0, 0, 0, 0, 0, 0, 1],
+    [0, 1, 0, 0, 0, 0, 0, 1, 0],
+    [0, 0, 1, 0, 0, 0, 1, 0, 0],
   ],
-
   // Star
   [
     [0, 0, 0, 1, 0, 0, 0],
@@ -71,22 +68,36 @@ const emojiLevels = [
     [0, 0, 1, 1, 1, 0, 0],
     [0, 0, 0, 1, 0, 0, 0],
   ],
+  // Arrow
+  [
+    [0, 0, 0, 1, 0, 0, 0],
+    [0, 0, 1, 1, 0, 0, 0],
+    [0, 1, 1, 1, 0, 0, 0],
+    [1, 1, 1, 1, 1, 1, 1],
+    [0, 0, 0, 1, 0, 0, 0],
+  ],
+  // Letter T
+  [
+    [1, 1, 1, 1, 1, 1, 1],
+    [0, 0, 0, 1, 0, 0, 0],
+    [0, 0, 0, 1, 0, 0, 0],
+    [0, 0, 0, 1, 0, 0, 0],
+    [0, 0, 0, 1, 0, 0, 0],
+  ],
+  // Square
+  [
+    [1, 1, 1, 1, 1],
+    [1, 0, 0, 0, 1],
+    [1, 0, 0, 0, 1],
+    [1, 0, 0, 0, 1],
+    [1, 1, 1, 1, 1],
+  ],
 ];
 
 // DOM Elements
-const startScreen = document.createElement("div");
-startScreen.classList.add("modal", "visible");
-startScreen.innerHTML = `
-  <div class="modal-content">
-    <h2>Brick Breaker</h2>
-    <p>Form shapes, clear bricks, and win!</p>
-    <button onclick="startGame()">Start Game</button>
-  </div>`;
-document.body.appendChild(startScreen);
-
-const gameOverModal = document.createElement("div");
-gameOverModal.classList.add("modal", "hidden");
-document.body.appendChild(gameOverModal);
+const startScreen = document.getElementById("startModal");
+const gameOverModal = document.getElementById("gameOverModal");
+const scoreDisplay = document.getElementById("scoreDisplay");
 
 // Event Listeners
 document.addEventListener("keydown", keyDownHandler);
@@ -94,16 +105,24 @@ document.addEventListener("keyup", keyUpHandler);
 
 // Event Handlers
 function keyDownHandler(e) {
-  if (e.key === "F" || e.key === "f") moveLeft = true;
-  if (e.key === "J" || e.key === "j") moveRight = true;
+  if (e.key === "ArrowLeft") moveLeft = true;
+  if (e.key === "ArrowRight") moveRight = true;
 }
 
 function keyUpHandler(e) {
-  if (e.key === "F" || e.key === "f") moveLeft = false;
-  if (e.key === "J" || e.key === "j") moveRight = false;
+  if (e.key === "ArrowLeft") moveLeft = false;
+  if (e.key === "ArrowRight") moveRight = false;
 }
 
-// Load Bricks Based on Grid Pattern
+// Start Game
+function startGame() {
+  startScreen.classList.add("hidden");
+  isGameStarted = true;
+  loadLevel(currentLevel);
+  draw();
+}
+
+// Load Bricks Based on Current Level
 function loadLevel(levelIndex) {
   const pattern = emojiLevels[levelIndex];
   bricks = [];
@@ -188,46 +207,40 @@ function restartGame() {
   ballDX = 2;
   ballDY = -2;
   isGameStarted = false;
+  isGameOver = false;
   gameOverModal.classList.add("hidden");
   startScreen.classList.remove("hidden");
-}
-
-// Start Game
-function startGame() {
-  startScreen.classList.add("hidden");
-  isGameStarted = true;
-  loadLevel(currentLevel);
-  draw();
 }
 
 // Game Over
 function gameOver() {
   isGameOver = true;
-  pauseGame();
   gameOverModal.innerHTML = `
     <div class="modal-content">
       <h2>Game Over</h2>
       <p>Final Score: ${score}</p>
-      <button onclick="restartGame()">Restart</button>
+      <button id="restartButton">Restart</button>
     </div>`;
+  document.getElementById("restartButton").addEventListener("click", restartGame);
   gameOverModal.classList.remove("hidden");
 }
 
 // Win Game
 function winGame() {
-  pauseGame();
+  isGameStarted = false;
   gameOverModal.innerHTML = `
     <div class="modal-content">
       <h2>You Win!</h2>
       <p>Score: ${score}</p>
-      <button onclick="restartGame()">Play Again</button>
+      <button id="restartButton">Play Again</button>
     </div>`;
+  document.getElementById("restartButton").addEventListener("click", restartGame);
   gameOverModal.classList.remove("hidden");
 }
 
 // Draw Everything
 function draw() {
-  if (isPaused || isGameOver || !isGameStarted) return;
+  if (!isGameStarted || isPaused || isGameOver) return;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawBricks();
@@ -260,5 +273,5 @@ function draw() {
   requestAnimationFrame(draw);
 }
 
-// Initialize Game
+// Initialize the game
 loadLevel(currentLevel);
