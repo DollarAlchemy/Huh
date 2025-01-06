@@ -5,23 +5,25 @@ const ctx = canvas.getContext('2d');
 // DOM Elements
 const themeSelector = document.getElementById('themeSelector');
 const scoreDisplay = document.getElementById('score');
+const expulsionButton = document.getElementById('expulsionButton');
 
 // Game variables
-let ball = { x: 400, y: 500, radius: 10, dx: 2, dy: -2, color: '#ffffff' };
-let flipperLeft = { x: 200, y: 450, width: 60, height: 10, angle: 0, color: '#00ff00' };
-let flipperRight = { x: 600, y: 450, width: 60, height: 10, angle: 0, color: '#00ff00' };
+let ball = { x: 400, y: 100, radius: 10, dx: 0, dy: 0, color: '#ffffff' };
+let flipperLeft = { x: 200, y: 550, width: 60, height: 10, angle: 0, color: '#00ff00' };
+let flipperRight = { x: 600, y: 550, width: 60, height: 10, angle: 0, color: '#00ff00' };
 let recoveryPoints = [
     { x: 150, y: 400, radius: 20, color: '#00f' },
     { x: 250, y: 350, radius: 20, color: '#00f' }
 ];
 let bumpers = [
-    { x: 300, y: 150, radius: 20, color: '#0000ff', points: 50 },
-    { x: 500, y: 200, radius: 20, color: '#0000ff', points: 50 },
-    { x: 400, y: 300, radius: 20, color: '#0000ff', points: 50 }
+    { x: 300, y: 200, radius: 20, color: '#0000ff', points: 50 },
+    { x: 500, y: 250, radius: 20, color: '#0000ff', points: 50 },
+    { x: 400, y: 350, radius: 20, color: '#0000ff', points: 50 }
 ];
 let backgroundColor = '#000';
 let score = 0;
 let startTime = Date.now(); // Start the timer
+let inChamber = true; // Ball starts in the chamber
 
 // Themes for customization
 const themes = {
@@ -55,6 +57,35 @@ function applyTheme(theme) {
 function drawBackground() {
     ctx.fillStyle = backgroundColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+// Draw the boundaries (with chamber and shaft)
+function drawBoundaries() {
+    ctx.strokeStyle = 'green';
+    ctx.lineWidth = 5;
+
+    // Outer boundary
+    ctx.beginPath();
+    ctx.moveTo(50, 50); // Top-left
+    ctx.lineTo(750, 50); // Top-right
+    ctx.lineTo(750, 550); // Bottom-right
+    ctx.lineTo(50, 550); // Bottom-left
+    ctx.closePath();
+    ctx.stroke();
+
+    // Chamber (top section)
+    ctx.beginPath();
+    ctx.moveTo(300, 50);
+    ctx.lineTo(300, 150); // Left wall of chamber
+    ctx.lineTo(500, 150); // Bottom of chamber
+    ctx.lineTo(500, 50); // Right wall of chamber
+    ctx.stroke();
+
+    // Shaft (connects chamber to playfield)
+    ctx.beginPath();
+    ctx.moveTo(400, 150);
+    ctx.lineTo(400, 250);
+    ctx.stroke();
 }
 
 // Draw the ball
@@ -94,6 +125,26 @@ function drawBumper(bumper) {
     ctx.closePath();
 }
 
+// Launch the ball from the chamber
+expulsionButton.addEventListener('click', () => {
+    if (inChamber) {
+        ball.dx = Math.random() * 2 - 1; // Add slight randomness to horizontal direction
+        ball.dy = 3; // Launch downward
+        inChamber = false; // Ball leaves the chamber
+        expulsionButton.style.display = 'none'; // Hide the button
+    }
+});
+
+// Reset the ball to the chamber
+function resetBall() {
+    ball.x = 400;
+    ball.y = 100;
+    ball.dx = 0;
+    ball.dy = 0;
+    inChamber = true;
+    expulsionButton.style.display = 'block'; // Show the button again
+}
+
 // Update ball position and handle collisions
 function updateBall() {
     ball.x += ball.dx;
@@ -103,10 +154,9 @@ function updateBall() {
     if (ball.x + ball.radius > canvas.width || ball.x - ball.radius < 0) ball.dx *= -1;
     if (ball.y - ball.radius < 0) ball.dy *= -1;
 
-    // Gutter collision
+    // Gutter collision (exit playfield)
     if (ball.y + ball.radius > canvas.height) {
-        alert('Game Over');
-        document.location.reload();
+        setTimeout(resetBall, 1000); // Reset the ball after a short delay
     }
 
     // Recovery point collisions
@@ -145,6 +195,7 @@ function drawTimer() {
 // Draw all elements
 function draw() {
     drawBackground();
+    drawBoundaries();
     drawBall();
     drawFlipper(flipperLeft);
     drawFlipper(flipperRight);
