@@ -1,41 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pinball Game</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brick Breaker</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="controls">
-        <!-- Theme Selector -->
-        <label for="themeSelector">Select Theme:</label>
-        <select id="themeSelector">
-            <option value="classic">Classic</option>
-            <option value="neon">Neon</option>
-            <option value="retro">Retro</option>
-        </select>
+  <div class="game-container">
+    <!-- Game Canvas -->
+    <canvas id="gameCanvas" width="480" height="320"></canvas>
 
-        <!-- Score Display -->
-        <div id="scoreDisplay">Score: <span id="score">0</span></div>
+    <!-- Touch Controls -->
+    <div class="controls">
+      <button id="leftButton" class="control-button">⬅️ Move Left</button>
+      <button id="rightButton" class="control-button">➡️ Move Right</button>
     </div>
 
-    <!-- Canvas for Game -->
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
-
-    <!-- Ball Expulsion Button -->
-    <div id="expulsionButtonContainer">
-        <button id="expulsionButton">Launch Ball</button>
+    <!-- Info Panel -->
+    <div class="info-panel">
+      <p><strong>Score:</strong> <span id="scoreDisplay">0</span></p>
+      <p>Use <kbd>F</kbd> (Left), <kbd>J</kbd> (Right) or tap buttons above.</p>
     </div>
 
-    <!-- Game Over Message -->
-    <div id="gameOverScreen" class="hidden">
-        <h1>Game Over</h1>
-        <p>Your Score: <span id="finalScore">0</span></p>
-        <button id="restartButton">Restart Game</button>
-    </div>
+    <!-- Menu Button -->
+    <button id="menuButton" class="menu-button">☰ Menu</button>
+  </div>
 
-    <!-- Link to JavaScript -->
-    <script src="script.js"></script>
+  <!-- Menu Modal -->
+  <div id="menuModal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Game Menu</h2>
+      <button id="resumeButton" class="menu-item">Resume</button>
+      <button id="restartButton" class="menu-item">Restart</button>
+      <label class="menu-item">
+        Paddle Color:
+        <input id="paddleColor" type="color" value="#ffffff">
+      </label>
+      <label class="menu-item">
+        Ball Color:
+        <input id="ballColor" type="color" value="#ffffff">
+      </label>
+      <button id="closeMenuButton" class="menu-item">Close</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
