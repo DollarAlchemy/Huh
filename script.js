@@ -18,55 +18,51 @@ let moveLeft = false;
 let moveRight = false;
 
 // Brick properties
-const brickRowCount = 5;
-const brickColumnCount = 7;
-const brickWidth = 60;
-const brickHeight = 20;
-const brickPadding = 10;
+const brickWidth = 40; // Smaller bricks
+const brickHeight = 15;
+const brickPadding = 5;
 const brickOffsetTop = 30;
 const brickOffsetLeft = 35;
-
 let bricks = [];
-for (let c = 0; c < brickColumnCount; c++) {
-  bricks[c] = [];
-  for (let r = 0; r < brickRowCount; r++) {
-    bricks[c][r] = { x: 0, y: 0, status: 1 };
-  }
-}
+let currentLevel = 0;
 
 // Score
 let score = 0;
 
 // Game State
 let isPaused = false;
+let isGameOver = false;
 
-// Paddle and Ball colors
-let paddleColor = "#ffffff";
-let ballColor = "#ffffff";
+// Emoji Brick Patterns (Grid Representation)
+const emojiLevels = [
+  // Smiley Face
+  [
+    [0, 0, 1, 1, 0, 1, 1, 0, 0],
+    [0, 1, 0, 0, 1, 0, 0, 1, 0],
+    [0, 1, 0, 0, 0, 0, 0, 1, 0],
+    [0, 0, 1, 0, 0, 0, 1, 0, 0],
+    [0, 0, 0, 1, 1, 1, 0, 0, 0],
+  ],
+
+  // Pumpkin
+  [
+    [0, 1, 1, 1, 1, 1, 1, 0],
+    [1, 0, 1, 0, 0, 1, 0, 1],
+    [1, 0, 1, 0, 0, 1, 0, 1],
+    [0, 1, 0, 1, 1, 0, 1, 0],
+    [0, 0, 1, 1, 1, 1, 0, 0],
+  ],
+];
 
 // DOM Elements
 const scoreDisplay = document.getElementById("scoreDisplay");
-const menuButton = document.getElementById("menuButton");
-const menuModal = document.getElementById("menuModal");
-const resumeButton = document.getElementById("resumeButton");
-const restartButton = document.getElementById("restartButton");
-const closeMenuButton = document.getElementById("closeMenuButton");
-const paddleColorInput = document.getElementById("paddleColor");
-const ballColorInput = document.getElementById("ballColor");
+const gameOverModal = document.createElement("div");
+gameOverModal.classList.add("modal", "hidden");
+document.body.appendChild(gameOverModal);
 
 // Event Listeners
 document.addEventListener("keydown", keyDownHandler);
 document.addEventListener("keyup", keyUpHandler);
-document.getElementById("leftButton").addEventListener("touchstart", () => (moveLeft = true));
-document.getElementById("leftButton").addEventListener("touchend", () => (moveLeft = false));
-document.getElementById("rightButton").addEventListener("touchstart", () => (moveRight = true));
-document.getElementById("rightButton").addEventListener("touchend", () => (moveRight = false));
-menuButton.addEventListener("click", () => toggleMenu(true));
-closeMenuButton.addEventListener("click", () => toggleMenu(false));
-resumeButton.addEventListener("click", () => toggleMenu(false));
-restartButton.addEventListener("click", restartGame);
-paddleColorInput.addEventListener("change", (e) => (paddleColor = e.target.value));
-ballColorInput.addEventListener("change", (e) => (ballColor = e.target.value));
 
 // Event Handlers
 function keyDownHandler(e) {
@@ -79,39 +75,28 @@ function keyUpHandler(e) {
   if (e.key === "J" || e.key === "j") moveRight = false;
 }
 
-// Pause and Resume Game
-function pauseGame() {
-  isPaused = true;
-}
-
-function resumeGame() {
-  isPaused = false;
-  draw(); // Restart game loop
-}
-
-// Restart Game
-function restartGame() {
-  document.location.reload();
-}
-
-// Toggle Menu
-function toggleMenu(show) {
-  if (show) {
-    menuModal.classList.remove("hidden");
-    menuModal.classList.add("visible");
-    pauseGame();
-  } else {
-    menuModal.classList.remove("visible");
-    menuModal.classList.add("hidden");
-    resumeGame();
-  }
+// Load Bricks Based on Grid Pattern
+function loadLevel(levelIndex) {
+  const pattern = emojiLevels[levelIndex];
+  bricks = [];
+  pattern.forEach((row, rowIndex) => {
+    row.forEach((brick, colIndex) => {
+      if (brick === 1) {
+        bricks.push({
+          x: colIndex * (brickWidth + brickPadding) + brickOffsetLeft,
+          y: rowIndex * (brickHeight + brickPadding) + brickOffsetTop,
+          status: 1,
+        });
+      }
+    });
+  });
 }
 
 // Draw Paddle
 function drawPaddle() {
   ctx.beginPath();
   ctx.rect(paddleX, canvas.height - paddleHeight, paddleWidth, paddleHeight);
-  ctx.fillStyle = paddleColor;
+  ctx.fillStyle = "#ffffff";
   ctx.fill();
   ctx.closePath();
 }
@@ -120,62 +105,92 @@ function drawPaddle() {
 function drawBall() {
   ctx.beginPath();
   ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
-  ctx.fillStyle = ballColor;
+  ctx.fillStyle = "#ffffff";
   ctx.fill();
   ctx.closePath();
 }
 
 // Draw Bricks
 function drawBricks() {
-  for (let c = 0; c < brickColumnCount; c++) {
-    for (let r = 0; r < brickRowCount; r++) {
-      const b = bricks[c][r];
-      if (b.status === 1) {
-        const brickX = c * (brickWidth + brickPadding) + brickOffsetLeft;
-        const brickY = r * (brickHeight + brickPadding) + brickOffsetTop;
-        b.x = brickX;
-        b.y = brickY;
-
-        ctx.beginPath();
-        ctx.rect(brickX, brickY, brickWidth, brickHeight);
-        ctx.fillStyle = "#ff6f61";
-        ctx.fill();
-        ctx.closePath();
-      }
+  bricks.forEach((brick) => {
+    if (brick.status === 1) {
+      ctx.beginPath();
+      ctx.rect(brick.x, brick.y, brickWidth, brickHeight);
+      ctx.fillStyle = "#ff6f61";
+      ctx.fill();
+      ctx.closePath();
     }
-  }
+  });
 }
 
 // Collision Detection
 function collisionDetection() {
-  for (let c = 0; c < brickColumnCount; c++) {
-    for (let r = 0; r < brickRowCount; r++) {
-      const b = bricks[c][r];
-      if (b.status === 1) {
-        if (
-          ballX > b.x &&
-          ballX < b.x + brickWidth &&
-          ballY > b.y &&
-          ballY < b.y + brickHeight
-        ) {
-          ballDY = -ballDY;
-          b.status = 0;
-          score++;
-          scoreDisplay.textContent = score;
+  for (let i = 0; i < bricks.length; i++) {
+    const brick = bricks[i];
+    if (
+      brick.status === 1 &&
+      ballX > brick.x &&
+      ballX < brick.x + brickWidth &&
+      ballY > brick.y &&
+      ballY < brick.y + brickHeight
+    ) {
+      ballDY = -ballDY;
+      brick.status = 0;
+      score++;
+      scoreDisplay.textContent = score;
 
-          if (score === brickRowCount * brickColumnCount) {
-            alert("YOU WIN!");
-            document.location.reload();
-          }
+      if (bricks.every((b) => b.status === 0)) {
+        currentLevel++;
+        if (currentLevel < emojiLevels.length) {
+          loadLevel(currentLevel);
+        } else {
+          winGame();
         }
       }
     }
   }
 }
 
+// Restart Game
+function restartGame() {
+  score = 0;
+  currentLevel = 0;
+  loadLevel(currentLevel);
+  ballX = canvas.width / 2;
+  ballY = canvas.height - 30;
+  ballDX = 2;
+  ballDY = -2;
+  draw();
+}
+
+// Game Over
+function gameOver() {
+  isGameOver = true;
+  pauseGame();
+  gameOverModal.innerHTML = `
+    <div class="modal-content">
+      <h2>Game Over</h2>
+      <p>Final Score: ${score}</p>
+      <button onclick="restartGame()">Restart</button>
+    </div>`;
+  gameOverModal.classList.remove("hidden");
+}
+
+// Win Game
+function winGame() {
+  pauseGame();
+  gameOverModal.innerHTML = `
+    <div class="modal-content">
+      <h2>You Win!</h2>
+      <p>Score: ${score}</p>
+      <button onclick="restartGame()">Play Again</button>
+    </div>`;
+  gameOverModal.classList.remove("hidden");
+}
+
 // Draw Everything
 function draw() {
-  if (isPaused) return;
+  if (isPaused || isGameOver) return;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawBricks();
@@ -193,8 +208,7 @@ function draw() {
     if (ballX > paddleX && ballX < paddleX + paddleWidth) {
       ballDY = -ballDY;
     } else {
-      alert("GAME OVER");
-      document.location.reload();
+      gameOver();
     }
   }
 
@@ -209,5 +223,6 @@ function draw() {
   requestAnimationFrame(draw);
 }
 
-// Start Game Loop
+// Initialize Game
+loadLevel(currentLevel);
 draw();
