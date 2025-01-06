@@ -121,6 +121,11 @@ canvas {
   opacity: 1;
 }
 
+.modal.hidden {
+  visibility: hidden;
+  opacity: 0;
+}
+
 .modal-content {
   background: #222;
   color: #fff;
@@ -131,10 +136,32 @@ canvas {
   max-width: 400px;
 }
 
-.modal h2 {
+.modal-content h2 {
+  font-size: 24px;
+  margin-bottom: 15px;
+}
+
+.modal-content p {
+  font-size: 16px;
   margin-bottom: 20px;
 }
 
+button {
+  padding: 12px 20px;
+  font-size: 16px;
+  color: white;
+  background-color: #444;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+button:hover {
+  background-color: #555;
+}
+
+/* Menu Items */
 .menu-item {
   display: block;
   margin: 10px auto;
@@ -157,4 +184,24 @@ canvas {
   border-radius: 5px;
   padding: 5px;
   background: #fff;
+}
+
+/* Start and Game Over Modals */
+#startModal,
+#gameOverModal {
+  z-index: 1001;
+}
+
+button#startButton,
+button#restartGameButton {
+  font-size: 18px;
+  padding: 12px 20px;
+  font-weight: bold;
+  background: #ff6f61;
+  border-radius: 5px;
+}
+
+button#startButton:hover,
+button#restartGameButton:hover {
+  background: #ff4f41;
 }
