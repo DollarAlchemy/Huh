@@ -32,6 +32,7 @@ let score = 0;
 // Game State
 let isPaused = false;
 let isGameOver = false;
+let isGameStarted = false;
 
 // Emoji Brick Patterns (Grid Representation)
 const emojiLevels = [
@@ -52,10 +53,37 @@ const emojiLevels = [
     [0, 1, 0, 1, 1, 0, 1, 0],
     [0, 0, 1, 1, 1, 1, 0, 0],
   ],
+
+  // Heart
+  [
+    [0, 1, 1, 0, 0, 1, 1, 0],
+    [1, 0, 0, 1, 1, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 1],
+    [0, 1, 0, 0, 0, 0, 1, 0],
+    [0, 0, 1, 0, 0, 1, 0, 0],
+  ],
+
+  // Star
+  [
+    [0, 0, 0, 1, 0, 0, 0],
+    [0, 0, 1, 1, 1, 0, 0],
+    [0, 1, 1, 0, 1, 1, 0],
+    [0, 0, 1, 1, 1, 0, 0],
+    [0, 0, 0, 1, 0, 0, 0],
+  ],
 ];
 
 // DOM Elements
-const scoreDisplay = document.getElementById("scoreDisplay");
+const startScreen = document.createElement("div");
+startScreen.classList.add("modal", "visible");
+startScreen.innerHTML = `
+  <div class="modal-content">
+    <h2>Brick Breaker</h2>
+    <p>Form shapes, clear bricks, and win!</p>
+    <button onclick="startGame()">Start Game</button>
+  </div>`;
+document.body.appendChild(startScreen);
+
 const gameOverModal = document.createElement("div");
 gameOverModal.classList.add("modal", "hidden");
 document.body.appendChild(gameOverModal);
@@ -155,11 +183,20 @@ function collisionDetection() {
 function restartGame() {
   score = 0;
   currentLevel = 0;
-  loadLevel(currentLevel);
   ballX = canvas.width / 2;
   ballY = canvas.height - 30;
   ballDX = 2;
   ballDY = -2;
+  isGameStarted = false;
+  gameOverModal.classList.add("hidden");
+  startScreen.classList.remove("hidden");
+}
+
+// Start Game
+function startGame() {
+  startScreen.classList.add("hidden");
+  isGameStarted = true;
+  loadLevel(currentLevel);
   draw();
 }
 
@@ -190,7 +227,7 @@ function winGame() {
 
 // Draw Everything
 function draw() {
-  if (isPaused || isGameOver) return;
+  if (isPaused || isGameOver || !isGameStarted) return;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawBricks();
@@ -225,4 +262,3 @@ function draw() {
 
 // Initialize Game
 loadLevel(currentLevel);
-draw();
