@@ -7,6 +7,16 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- Start Screen Modal -->
+  <div id="startModal" class="modal visible">
+    <div class="modal-content">
+      <h2>Welcome to Brick Breaker</h2>
+      <p>Break all the bricks to clear levels and win!</p>
+      <button id="startButton">Start Game</button>
+    </div>
+  </div>
+
+  <!-- Game Container -->
   <div class="game-container">
     <!-- Game Canvas -->
     <canvas id="gameCanvas" width="480" height="320"></canvas>
@@ -20,7 +30,7 @@
     <!-- Info Panel -->
     <div class="info-panel">
       <p><strong>Score:</strong> <span id="scoreDisplay">0</span></p>
-      <p>Use <kbd>F</kbd> (Left), <kbd>J</kbd> (Right), or tap buttons above.</p>
+      <p>Use <kbd>Arrow Left</kbd> and <kbd>Arrow Right</kbd>, or tap buttons above.</p>
     </div>
 
     <!-- Menu Button -->
@@ -42,6 +52,15 @@
         <input id="ballColor" type="color" value="#ffffff">
       </label>
       <button id="closeMenuButton" class="menu-item">Close</button>
+    </div>
+  </div>
+
+  <!-- Game Over Modal -->
+  <div id="gameOverModal" class="modal hidden">
+    <div class="modal-content">
+      <h2 id="endGameTitle">Game Over</h2>
+      <p id="finalScoreText">Your Score: 0</p>
+      <button id="restartGameButton">Restart</button>
     </div>
   </div>
 
