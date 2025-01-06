@@ -8,17 +8,20 @@ const scoreDisplay = document.getElementById('score');
 
 // Game variables
 let ball = { x: 400, y: 500, radius: 10, dx: 2, dy: -2, color: '#ffffff' };
-let flipperRight1 = { x: 600, y: 450, width: 60, height: 10, angle: 0, color: '#00ff00' };
-let flipperRight2 = { x: 700, y: 500, width: 60, height: 10, angle: 0, color: '#00ff00' };
+let flipperLeft = { x: 200, y: 450, width: 60, height: 10, angle: 0, color: '#00ff00' };
+let flipperRight = { x: 600, y: 450, width: 60, height: 10, angle: 0, color: '#00ff00' };
 let recoveryPoints = [
     { x: 150, y: 400, radius: 20, color: '#00f' },
     { x: 250, y: 350, radius: 20, color: '#00f' }
 ];
 let bumpers = [
-    { x: 400, y: 300, radius: 30, color: '#ff9900', points: 50 }
+    { x: 300, y: 150, radius: 20, color: '#0000ff', points: 50 },
+    { x: 500, y: 200, radius: 20, color: '#0000ff', points: 50 },
+    { x: 400, y: 300, radius: 20, color: '#0000ff', points: 50 }
 ];
 let backgroundColor = '#000';
 let score = 0;
+let startTime = Date.now(); // Start the timer
 
 // Themes for customization
 const themes = {
@@ -43,8 +46,8 @@ const themes = {
 function applyTheme(theme) {
     const selectedTheme = themes[theme];
     backgroundColor = selectedTheme.backgroundColor;
-    flipperRight1.color = selectedTheme.flipperColor;
-    flipperRight2.color = selectedTheme.flipperColor;
+    flipperLeft.color = selectedTheme.flipperColor;
+    flipperRight.color = selectedTheme.flipperColor;
     recoveryPoints.forEach(point => point.color = selectedTheme.recoveryColor);
 }
 
@@ -66,8 +69,8 @@ function drawBall() {
 // Draw the flippers
 function drawFlipper(flipper) {
     ctx.save();
-    ctx.translate(flipper.x + flipper.width / 2, flipper.y);
-    ctx.rotate(flipper.angle * Math.PI / 180);
+    ctx.translate(flipper.x, flipper.y);
+    ctx.rotate((flipper.angle * Math.PI) / 180);
     ctx.fillStyle = flipper.color;
     ctx.fillRect(-flipper.width / 2, -flipper.height / 2, flipper.width, flipper.height);
     ctx.restore();
@@ -131,22 +134,23 @@ function updateScore(points) {
     scoreDisplay.textContent = score;
 }
 
-// Randomize bumper positions periodically
-function randomizeBumpers() {
-    bumpers.forEach(bumper => {
-        bumper.x = Math.random() * (canvas.width - 100) + 50;
-        bumper.y = Math.random() * (canvas.height / 2) + 50;
-    });
+// Draw the timer
+function drawTimer() {
+    const elapsedTime = Math.floor((Date.now() - startTime) / 1000); // Calculate elapsed time in seconds
+    ctx.font = '20px Arial';
+    ctx.fillStyle = 'white';
+    ctx.fillText(`Time: ${elapsedTime}s`, 10, 30); // Display timer in the top-left corner
 }
 
 // Draw all elements
 function draw() {
     drawBackground();
     drawBall();
-    drawFlipper(flipperRight1);
-    drawFlipper(flipperRight2);
+    drawFlipper(flipperLeft);
+    drawFlipper(flipperRight);
     recoveryPoints.forEach(drawRecoveryPoint);
     bumpers.forEach(drawBumper);
+    drawTimer();
 }
 
 // Main update loop
@@ -156,11 +160,19 @@ function update() {
     requestAnimationFrame(update);
 }
 
-// Event listeners
-themeSelector.addEventListener('change', (e) => applyTheme(e.target.value));
+// Event listeners for flipper control
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'f') flipperLeft.angle = -30; // Rotate left flipper
+    if (event.key === 'j') flipperRight.angle = 30; // Rotate right flipper
+});
 
-// Randomize bumpers every 10 seconds
-setInterval(randomizeBumpers, 10000);
+document.addEventListener('keyup', (event) => {
+    if (event.key === 'f') flipperLeft.angle = 0;
+    if (event.key === 'j') flipperRight.angle = 0;
+});
+
+// Event listener for theme changes
+themeSelector.addEventListener('change', (e) => applyTheme(e.target.value));
 
 // Start the game with the default theme
 applyTheme('classic');
