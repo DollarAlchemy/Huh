@@ -8,46 +8,66 @@
 </head>
 <body>
     <div id="game-container">
-        <h1>Elemental Pathway</h1>
-        <p id="instructions">Start by selecting a Tier 1 element. Navigate through the tiers and see if you can outsmart the AI!</p>
+        <div id="gui-panel">
+            <h1>Elemental Pathway</h1>
+            <p id="instructions">Start by selecting a Tier 1 element. Navigate through the tiers and see if you can outsmart the AI!</p>
 
-        <div id="diagram-container">
-            <svg viewBox="0 0 500 400">
-                <!-- Tier 1 -->
-                <circle cx="250" cy="50" r="20" class="tier1" id="red-circle" />
-                <text x="250" y="45" text-anchor="middle" class="tier1-text">Red</text>
+            <!-- Game Map -->
+            <div id="map-container">
+                <svg id="game-map" viewBox="0 0 500 400">
+                    <!-- Tier 1 -->
+                    <circle cx="250" cy="50" r="20" class="tier-node" id="tier1-red" fill="red" />
+                    <text x="250" y="45" text-anchor="middle" class="tier-label">Red</text>
 
-                <circle cx="150" cy="50" r="20" class="tier1" id="blue-circle" />
-                <text x="150" y="45" text-anchor="middle" class="tier1-text">Blue</text>
+                    <circle cx="150" cy="50" r="20" class="tier-node" id="tier1-blue" fill="blue" />
+                    <text x="150" y="45" text-anchor="middle" class="tier-label">Blue</text>
 
-                <circle cx="350" cy="50" r="20" class="tier1" id="brown-circle" />
-                <text x="350" y="45" text-anchor="middle" class="tier1-text">Brown</text>
+                    <circle cx="350" cy="50" r="20" class="tier-node" id="tier1-brown" fill="brown" />
+                    <text x="350" y="45" text-anchor="middle" class="tier-label">Brown</text>
 
-                <!-- Animated Connections -->
-                <line x1="150" y1="70" x2="245" y2="150" class="tier-connection" />
-                <line x1="250" y1="70" x2="145" y2="150" class="tier-connection" />
-                <line x1="350" y1="70" x2="345" y2="150" class="tier-connection" />
-            </svg>
-        </div>
+                    <!-- Tier 2 -->
+                    <circle cx="200" cy="150" r="15" class="tier-node" id="tier2-cyan" fill="cyan" />
+                    <circle cx="300" cy="150" r="15" class="tier-node" id="tier2-purple" fill="purple" />
 
-        <div id="tier-1" class="tier">
-            <h2>Tier 1: Choose your Primary Element</h2>
-            <button class="tier-btn" onclick="selectTier1('Earth')">Earth</button>
-            <button class="tier-btn" onclick="selectTier1('Water')">Water</button>
-            <button class="tier-btn" onclick="selectTier1('Fire')">Fire</button>
-        </div>
+                    <!-- Tier 3 -->
+                    <polygon points="250,250 230,280 270,280" id="tier3-green" fill="green" class="tier-node" />
+                    <polygon points="150,250 130,280 170,280" id="tier3-orange" fill="orange" class="tier-node" />
+                    <polygon points="350,250 330,280 370,280" id="tier3-yellow" fill="yellow" class="tier-node" />
+                </svg>
+            </div>
 
-        <div id="tier-2" class="tier hidden">
-            <h2>Tier 2: Choose your Pathway</h2>
-            <div id="tier-2-options"></div>
-        </div>
+            <!-- Results Panel -->
+            <div id="results-panel">
+                <h2>Tier 1: Choose your Primary Element</h2>
+                <button class="tier-btn" onclick="selectTier1('Earth')">Earth</button>
+                <button class="tier-btn" onclick="selectTier1('Water')">Water</button>
+                <button class="tier-btn" onclick="selectTier1('Fire')">Fire</button>
 
-        <div id="tier-3" class="tier hidden">
-            <h2>Tier 3: Your Final Element</h2>
-            <p id="tier-3-result"></p>
-            <p id="ai-result"></p>
-            <p id="game-outcome"></p>
-            <button class="tier-btn" onclick="resetGame()">Play Again</button>
+                <div id="tier-2" class="tier hidden">
+                    <h2>Tier 2: Choose your Pathway</h2>
+                    <div id="tier-2-options"></div>
+                </div>
+
+                <div id="tier-3" class="tier hidden">
+                    <h2>Tier 3: Your Final Element</h2>
+                    <p id="tier-3-result"></p>
+                    <p id="ai-result"></p>
+                    <p id="game-outcome"></p>
+                    <button class="tier-btn" onclick="resetGame()">Play Again</button>
+                </div>
+            </div>
+
+            <!-- Combat Triangle -->
+            <div id="combat-triangle">
+                <svg viewBox="0 0 200 200">
+                    <circle cx="100" cy="50" r="20" id="combat-user" fill="gray" />
+                    <text x="100" y="45" text-anchor="middle">You</text>
+                    <circle cx="50" cy="150" r="20" id="combat-ai" fill="gray" />
+                    <text x="50" y="145" text-anchor="middle">AI</text>
+                    <circle cx="150" cy="150" r="20" id="combat-result" fill="gray" />
+                    <text x="150" y="145" text-anchor="middle">Outcome</text>
+                </svg>
+            </div>
         </div>
     </div>
     <script src="script.js"></script>
