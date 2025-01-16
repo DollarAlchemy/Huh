@@ -1,277 +1,103 @@
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
+import java.util.*;
 
-// Paddle properties
-const paddleWidth = 75;
-const paddleHeight = 10;
-let paddleX = (canvas.width - paddleWidth) / 2;
+public class ElementalPathwayGame {
 
-// Ball properties
-const ballRadius = 8;
-let ballX = canvas.width / 2;
-let ballY = canvas.height - 30;
-let ballDX = 2;
-let ballDY = -2;
+    // Tier 2 options
+    private static final Map<String, List<String>> tier2Options = Map.of(
+        "Earth", Arrays.asList("Metal", "Wood"),
+        "Water", Arrays.asList("Steam", "Ice"),
+        "Fire", Arrays.asList("Lava", "Steam")
+    );
 
-// Controls
-let moveLeft = false;
-let moveRight = false;
+    // Tier 3 results
+    private static final Map<String, String> tier3Results = Map.of(
+        "Metal", "Wind",
+        "Wood", "Lava",
+        "Steam", "Ice",
+        "Lava", "Ice",
+        "Ice", "Wind",
+        "Wind", "Lava"
+    );
 
-// Brick properties
-const brickWidth = 40;
-const brickHeight = 15;
-const brickPadding = 5;
-const brickOffsetTop = 30;
-const brickOffsetLeft = 35;
-let bricks = [];
-let currentLevel = 0;
+    // AI choices for Tier 3
+    private static final List<String> aiChoices = Arrays.asList("Wind", "Lava", "Ice");
 
-// Score
-let score = 0;
+    private static final Scanner scanner = new Scanner(System.in);
 
-// Game State
-let isPaused = false;
-let isGameOver = false;
-let isGameStarted = false;
+    public static void main(String[] args) {
+        System.out.println("Welcome to the Elemental Pathway Game!");
+        System.out.println("Navigate through the tiers and see if you can outsmart the AI!");
+        System.out.println();
 
-// Emoji Brick Patterns
-const emojiLevels = [
-  // Smiley Face
-  [
-    [0, 0, 1, 1, 0, 1, 1, 0, 0],
-    [0, 1, 0, 0, 1, 0, 0, 1, 0],
-    [0, 1, 0, 0, 0, 0, 0, 1, 0],
-    [0, 0, 1, 0, 0, 0, 1, 0, 0],
-    [0, 0, 0, 1, 1, 1, 0, 0, 0],
-  ],
-  // Pumpkin
-  [
-    [0, 1, 1, 1, 1, 1, 1, 0],
-    [1, 0, 1, 0, 0, 1, 0, 1],
-    [1, 0, 1, 0, 0, 1, 0, 1],
-    [0, 1, 0, 1, 1, 0, 1, 0],
-    [0, 0, 1, 1, 1, 1, 0, 0],
-  ],
-  // Heart
-  [
-    [0, 0, 1, 1, 0, 1, 1, 0, 0],
-    [0, 1, 0, 0, 1, 0, 0, 1, 0],
-    [1, 0, 0, 0, 0, 0, 0, 0, 1],
-    [0, 1, 0, 0, 0, 0, 0, 1, 0],
-    [0, 0, 1, 0, 0, 0, 1, 0, 0],
-  ],
-  // Star
-  [
-    [0, 0, 0, 1, 0, 0, 0],
-    [0, 0, 1, 1, 1, 0, 0],
-    [0, 1, 1, 0, 1, 1, 0],
-    [0, 0, 1, 1, 1, 0, 0],
-    [0, 0, 0, 1, 0, 0, 0],
-  ],
-  // Arrow
-  [
-    [0, 0, 0, 1, 0, 0, 0],
-    [0, 0, 1, 1, 0, 0, 0],
-    [0, 1, 1, 1, 0, 0, 0],
-    [1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 1, 0, 0, 0],
-  ],
-  // Letter T
-  [
-    [1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 1, 0, 0, 0],
-    [0, 0, 0, 1, 0, 0, 0],
-    [0, 0, 0, 1, 0, 0, 0],
-    [0, 0, 0, 1, 0, 0, 0],
-  ],
-  // Square
-  [
-    [1, 1, 1, 1, 1],
-    [1, 0, 0, 0, 1],
-    [1, 0, 0, 0, 1],
-    [1, 0, 0, 0, 1],
-    [1, 1, 1, 1, 1],
-  ],
-];
+        while (true) {
+            playGame();
 
-// DOM Elements
-const startScreen = document.getElementById("startModal");
-const gameOverModal = document.getElementById("gameOverModal");
-const scoreDisplay = document.getElementById("scoreDisplay");
-
-// Event Listeners
-document.addEventListener("keydown", keyDownHandler);
-document.addEventListener("keyup", keyUpHandler);
-
-// Event Handlers
-function keyDownHandler(e) {
-  if (e.key === "ArrowLeft") moveLeft = true;
-  if (e.key === "ArrowRight") moveRight = true;
-}
-
-function keyUpHandler(e) {
-  if (e.key === "ArrowLeft") moveLeft = false;
-  if (e.key === "ArrowRight") moveRight = false;
-}
-
-// Start Game
-function startGame() {
-  startScreen.classList.add("hidden");
-  isGameStarted = true;
-  loadLevel(currentLevel);
-  draw();
-}
-
-// Load Bricks Based on Current Level
-function loadLevel(levelIndex) {
-  const pattern = emojiLevels[levelIndex];
-  bricks = [];
-  pattern.forEach((row, rowIndex) => {
-    row.forEach((brick, colIndex) => {
-      if (brick === 1) {
-        bricks.push({
-          x: colIndex * (brickWidth + brickPadding) + brickOffsetLeft,
-          y: rowIndex * (brickHeight + brickPadding) + brickOffsetTop,
-          status: 1,
-        });
-      }
-    });
-  });
-}
-
-// Draw Paddle
-function drawPaddle() {
-  ctx.beginPath();
-  ctx.rect(paddleX, canvas.height - paddleHeight, paddleWidth, paddleHeight);
-  ctx.fillStyle = "#ffffff";
-  ctx.fill();
-  ctx.closePath();
-}
-
-// Draw Ball
-function drawBall() {
-  ctx.beginPath();
-  ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
-  ctx.fillStyle = "#ffffff";
-  ctx.fill();
-  ctx.closePath();
-}
-
-// Draw Bricks
-function drawBricks() {
-  bricks.forEach((brick) => {
-    if (brick.status === 1) {
-      ctx.beginPath();
-      ctx.rect(brick.x, brick.y, brickWidth, brickHeight);
-      ctx.fillStyle = "#ff6f61";
-      ctx.fill();
-      ctx.closePath();
-    }
-  });
-}
-
-// Collision Detection
-function collisionDetection() {
-  for (let i = 0; i < bricks.length; i++) {
-    const brick = bricks[i];
-    if (
-      brick.status === 1 &&
-      ballX > brick.x &&
-      ballX < brick.x + brickWidth &&
-      ballY > brick.y &&
-      ballY < brick.y + brickHeight
-    ) {
-      ballDY = -ballDY;
-      brick.status = 0;
-      score++;
-      scoreDisplay.textContent = score;
-
-      if (bricks.every((b) => b.status === 0)) {
-        currentLevel++;
-        if (currentLevel < emojiLevels.length) {
-          loadLevel(currentLevel);
-        } else {
-          winGame();
+            System.out.print("Would you like to play again? (yes/no): ");
+            String playAgain = scanner.nextLine().trim().toLowerCase();
+            if (!playAgain.equals("yes")) {
+                System.out.println("Thanks for playing! Goodbye!");
+                break;
+            }
         }
-      }
     }
-  }
-}
 
-// Restart Game
-function restartGame() {
-  score = 0;
-  currentLevel = 0;
-  ballX = canvas.width / 2;
-  ballY = canvas.height - 30;
-  ballDX = 2;
-  ballDY = -2;
-  isGameStarted = false;
-  isGameOver = false;
-  gameOverModal.classList.add("hidden");
-  startScreen.classList.remove("hidden");
-}
+    private static void playGame() {
+        System.out.println("Tier 1: Choose your Primary Element (Earth, Water, Fire):");
+        String tier1Choice = scanner.nextLine().trim();
 
-// Game Over
-function gameOver() {
-  isGameOver = true;
-  gameOverModal.innerHTML = `
-    <div class="modal-content">
-      <h2>Game Over</h2>
-      <p>Final Score: ${score}</p>
-      <button id="restartButton">Restart</button>
-    </div>`;
-  document.getElementById("restartButton").addEventListener("click", restartGame);
-  gameOverModal.classList.remove("hidden");
-}
+        if (!tier2Options.containsKey(tier1Choice)) {
+            System.out.println("Invalid choice. Please try again.");
+            return;
+        }
 
-// Win Game
-function winGame() {
-  isGameStarted = false;
-  gameOverModal.innerHTML = `
-    <div class="modal-content">
-      <h2>You Win!</h2>
-      <p>Score: ${score}</p>
-      <button id="restartButton">Play Again</button>
-    </div>`;
-  document.getElementById("restartButton").addEventListener("click", restartGame);
-  gameOverModal.classList.remove("hidden");
-}
+        System.out.println("You chose " + tier1Choice + ". Choose a Tier 2 pathway:");
+        List<String> options = tier2Options.get(tier1Choice);
+        for (int i = 0; i < options.size(); i++) {
+            System.out.println((i + 1) + ". " + options.get(i));
+        }
 
-// Draw Everything
-function draw() {
-  if (!isGameStarted || isPaused || isGameOver) return;
+        int tier2ChoiceIndex = getUserChoice(options.size());
+        if (tier2ChoiceIndex == -1) {
+            System.out.println("Invalid choice. Please try again.");
+            return;
+        }
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  drawBricks();
-  drawBall();
-  drawPaddle();
-  collisionDetection();
+        String tier2Choice = options.get(tier2ChoiceIndex - 1);
+        String playerResult = tier3Results.get(tier2Choice);
 
-  // Ball Movement
-  if (ballX + ballDX > canvas.width - ballRadius || ballX + ballDX < ballRadius) {
-    ballDX = -ballDX;
-  }
-  if (ballY + ballDY < ballRadius) {
-    ballDY = -ballDY;
-  } else if (ballY + ballDY > canvas.height - ballRadius) {
-    if (ballX > paddleX && ballX < paddleX + paddleWidth) {
-      ballDY = -ballDY;
-    } else {
-      gameOver();
+        // AI's choice
+        String aiResult = aiChoices.get(new Random().nextInt(aiChoices.size()));
+
+        System.out.println("Your final element is: " + playerResult);
+        System.out.println("AI's final element is: " + aiResult);
+
+        // Determine outcome
+        String outcome = determineOutcome(playerResult, aiResult);
+        System.out.println("Game outcome: " + outcome);
     }
-  }
 
-  // Paddle Movement
-  if (moveRight && paddleX < canvas.width - paddleWidth) paddleX += 5;
-  if (moveLeft && paddleX > 0) paddleX -= 5;
+    private static int getUserChoice(int maxOptions) {
+        try {
+            System.out.print("Enter your choice (1-" + maxOptions + "): ");
+            int choice = Integer.parseInt(scanner.nextLine().trim());
+            if (choice < 1 || choice > maxOptions) {
+                return -1;
+            }
+            return choice;
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
 
-  // Ball Position
-  ballX += ballDX;
-  ballY += ballDY;
-
-  requestAnimationFrame(draw);
+    private static String determineOutcome(String player, String ai) {
+        if (player.equals(ai)) {
+            return "It's a draw!";
+        }
+        if ((player.equals("Wind") && ai.equals("Lava")) ||
+            (player.equals("Lava") && ai.equals("Ice")) ||
+            (player.equals("Ice") && ai.equals("Wind"))) {
+            return "You win!";
+        }
+        return "AI wins!";
+    }
 }
-
-// Initialize the game
-loadLevel(currentLevel);
