@@ -27,7 +27,7 @@ public class ElementalPathwayGame {
     public static void main(String[] args) {
         System.out.println("Welcome to the Elemental Pathway Game!");
         System.out.println("Navigate through the tiers and see if you can outsmart the AI!");
-        System.out.println();
+        System.out.println("----------------------------------------------------------");
 
         while (true) {
             playGame();
@@ -38,55 +38,69 @@ public class ElementalPathwayGame {
                 System.out.println("Thanks for playing! Goodbye!");
                 break;
             }
+            System.out.println("----------------------------------------------------------");
         }
     }
 
     private static void playGame() {
-        System.out.println("Tier 1: Choose your Primary Element (Earth, Water, Fire):");
-        String tier1Choice = scanner.nextLine().trim();
+        // Tier 1 Selection
+        String tier1Choice = getValidTier1Choice();
+        System.out.println("You chose " + tier1Choice + ".");
 
-        if (!tier2Options.containsKey(tier1Choice)) {
-            System.out.println("Invalid choice. Please try again.");
-            return;
-        }
+        // Tier 2 Selection
+        List<String> tier2OptionsForChoice = tier2Options.get(tier1Choice);
+        System.out.println("Choose a Tier 2 pathway:");
+        String tier2Choice = getValidTier2Choice(tier2OptionsForChoice);
 
-        System.out.println("You chose " + tier1Choice + ". Choose a Tier 2 pathway:");
-        List<String> options = tier2Options.get(tier1Choice);
-        for (int i = 0; i < options.size(); i++) {
-            System.out.println((i + 1) + ". " + options.get(i));
-        }
-
-        int tier2ChoiceIndex = getUserChoice(options.size());
-        if (tier2ChoiceIndex == -1) {
-            System.out.println("Invalid choice. Please try again.");
-            return;
-        }
-
-        String tier2Choice = options.get(tier2ChoiceIndex - 1);
+        // Determine final result
         String playerResult = tier3Results.get(tier2Choice);
-
-        // AI's choice
         String aiResult = aiChoices.get(new Random().nextInt(aiChoices.size()));
 
-        System.out.println("Your final element is: " + playerResult);
+        System.out.println("\nYour final element is: " + playerResult);
         System.out.println("AI's final element is: " + aiResult);
 
         // Determine outcome
         String outcome = determineOutcome(playerResult, aiResult);
         System.out.println("Game outcome: " + outcome);
+
+        System.out.println("----------------------------------------------------------");
+    }
+
+    private static String getValidTier1Choice() {
+        while (true) {
+            System.out.println("Tier 1: Choose your Primary Element (Earth, Water, Fire):");
+            String choice = scanner.nextLine().trim();
+            if (tier2Options.containsKey(choice)) {
+                return choice;
+            }
+            System.out.println("Invalid choice. Please try again.");
+        }
+    }
+
+    private static String getValidTier2Choice(List<String> options) {
+        while (true) {
+            for (int i = 0; i < options.size(); i++) {
+                System.out.println((i + 1) + ". " + options.get(i));
+            }
+            int choiceIndex = getUserChoice(options.size());
+            if (choiceIndex != -1) {
+                return options.get(choiceIndex - 1);
+            }
+            System.out.println("Invalid choice. Please try again.");
+        }
     }
 
     private static int getUserChoice(int maxOptions) {
         try {
             System.out.print("Enter your choice (1-" + maxOptions + "): ");
             int choice = Integer.parseInt(scanner.nextLine().trim());
-            if (choice < 1 || choice > maxOptions) {
-                return -1;
+            if (choice >= 1 && choice <= maxOptions) {
+                return choice;
             }
-            return choice;
         } catch (NumberFormatException e) {
-            return -1;
+            // Fall through to invalid choice message
         }
+        return -1;
     }
 
     private static String determineOutcome(String player, String ai) {
